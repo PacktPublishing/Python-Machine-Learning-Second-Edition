@@ -1,5 +1,28 @@
-
 # coding: utf-8
+
+
+import os
+import sys
+import tarfile
+import time
+import pyprind
+import pandas as pd
+import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+import re
+from nltk.stem.porter import PorterStemmer
+import nltk
+from nltk.corpus import stopwords
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import cross_val_score
+from sklearn.feature_extraction.text import HashingVectorizer
+from sklearn.linear_model import SGDClassifier
+from sklearn.decomposition import LatentDirichletAllocation
 
 # *Python Machine Learning 2nd Edition* by [Sebastian Raschka](https://sebastianraschka.com), Packt Publishing Ltd. 2017
 # 
@@ -13,7 +36,6 @@
 
 # Note that the optional watermark extension is a small IPython notebook plugin that I developed to make the code reproducible. You can just skip the following line(s).
 
-# In[1]:
 
 
 
@@ -54,13 +76,8 @@
 
 # **Optional code to download and unzip the dataset via Python:**
 
-# In[2]:
 
 
-import os
-import sys
-import tarfile
-import time
 
 
 source = 'http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz'
@@ -92,7 +109,6 @@ if not os.path.isdir('aclImdb') and not os.path.isfile('aclImdb_v1.tar.gz'):
         urllib.request.urlretrieve(source, target, reporthook)
 
 
-# In[3]:
 
 
 if not os.path.isdir('aclImdb'):
@@ -103,12 +119,8 @@ if not os.path.isdir('aclImdb'):
 
 # ## Preprocessing the movie dataset into more convenient format
 
-# In[23]:
 
 
-import pyprind
-import pandas as pd
-import os
 
 # change the `basepath` to the directory of the
 # unzipped movie dataset
@@ -133,10 +145,8 @@ df.columns = ['review', 'sentiment']
 
 # Shuffling the DataFrame:
 
-# In[24]:
 
 
-import numpy as np
 
 np.random.seed(0)
 df = df.reindex(np.random.permutation(df.index))
@@ -144,27 +154,22 @@ df = df.reindex(np.random.permutation(df.index))
 
 # Optional: Saving the assembled data as CSV file:
 
-# In[25]:
 
 
 df.to_csv('movie_data.csv', index=False, encoding='utf-8')
 
 
-# In[26]:
 
 
-import pandas as pd
 
 df = pd.read_csv('movie_data.csv', encoding='utf-8')
 df.head(3)
 
 
-# <hr>
 # ### Note
 # 
 # If you have problems with creating the `movie_data.csv` file in the previous chapter, you can find a download a zip archive at 
 # https://github.com/rasbt/python-machine-learning-book-2nd-edition/tree/master/code/ch08/
-# <hr>
 
 
 # # Introducing the bag-of-words model
@@ -179,11 +184,8 @@ df.head(3)
 # 3. The sun is shining, the weather is sweet, and one and one is two
 # 
 
-# In[6]:
 
 
-import numpy as np
-from sklearn.feature_extraction.text import CountVectorizer
 
 count = CountVectorizer()
 docs = np.array([
@@ -195,7 +197,6 @@ bag = count.fit_transform(docs)
 
 # Now let us print the contents of the vocabulary to get a better understanding of the underlying concepts:
 
-# In[7]:
 
 
 print(count.vocabulary_)
@@ -205,7 +206,6 @@ print(count.vocabulary_)
 
 # Each index position in the feature vectors shown here corresponds to the integer values that are stored as dictionary items in the CountVectorizer vocabulary. For example, the  rst feature at index position 0 resembles the count of the word and, which only occurs in the last document, and the word is at index position 1 (the 2nd feature in the document vectors) occurs in all three sentences. Those values in the feature vectors are also called the raw term frequencies: *tf (t,d)*—the number of times a term t occurs in a document *d*.
 
-# In[8]:
 
 
 print(bag.toarray())
@@ -214,7 +214,6 @@ print(bag.toarray())
 
 # ## Assessing word relevancy via term frequency-inverse document frequency
 
-# In[9]:
 
 
 np.set_printoptions(precision=2)
@@ -233,10 +232,8 @@ np.set_printoptions(precision=2)
 # 
 # Scikit-learn implements yet another transformer, the `TfidfTransformer`, that takes the raw term frequencies from `CountVectorizer` as input and transforms them into tf-idfs:
 
-# In[10]:
 
 
-from sklearn.feature_extraction.text import TfidfTransformer
 
 tfidf = TfidfTransformer(use_idf=True, 
                          norm='l2', 
@@ -275,7 +272,6 @@ print(tfidf.fit_transform(count.fit_transform(docs))
 # 
 # $$\text{tf-idf}("is",d3)= 3 \times (0+1) = 3$$
 
-# In[11]:
 
 
 tf_is = 3
@@ -295,7 +291,6 @@ print('tf-idf of term "is" = %.2f' % tfidf_is)
 
 # As we can see, the results match the results returned by scikit-learn's `TfidfTransformer` (below). Since we now understand how tf-idfs are calculated, let us proceed to the next sections and apply those concepts to the movie review dataset.
 
-# In[12]:
 
 
 tfidf = TfidfTransformer(use_idf=True, norm=None, smooth_idf=True)
@@ -303,7 +298,6 @@ raw_tfidf = tfidf.fit_transform(count.fit_transform(docs)).toarray()[-1]
 raw_tfidf 
 
 
-# In[13]:
 
 
 l2_tfidf = raw_tfidf / np.sqrt(np.sum(raw_tfidf**2))
@@ -313,16 +307,13 @@ l2_tfidf
 
 # ## Cleaning text data
 
-# In[14]:
 
 
 df.loc[0, 'review'][-50:]
 
 
-# In[15]:
 
 
-import re
 def preprocessor(text):
     text = re.sub('<[^>]*>', '', text)
     emoticons = re.findall('(?::|;|=)(?:-)?(?:\)|\(|D|P)',
@@ -332,19 +323,16 @@ def preprocessor(text):
     return text
 
 
-# In[16]:
 
 
 preprocessor(df.loc[0, 'review'][-50:])
 
 
-# In[17]:
 
 
 preprocessor("</a>This :) is :( a test :-)!")
 
 
-# In[18]:
 
 
 df['review'] = df['review'].apply(preprocessor)
@@ -353,10 +341,8 @@ df['review'] = df['review'].apply(preprocessor)
 
 # ## Processing documents into tokens
 
-# In[9]:
 
 
-from nltk.stem.porter import PorterStemmer
 
 porter = PorterStemmer()
 
@@ -368,30 +354,24 @@ def tokenizer_porter(text):
     return [porter.stem(word) for word in text.split()]
 
 
-# In[10]:
 
 
 tokenizer('runners like running and thus they run')
 
 
-# In[11]:
 
 
 tokenizer_porter('runners like running and thus they run')
 
 
-# In[12]:
 
 
-import nltk
 
 nltk.download('stopwords')
 
 
-# In[13]:
 
 
-from nltk.corpus import stopwords
 
 stop = stopwords.words('english')
 [w for w in tokenizer_porter('a runner likes running and runs a lot')[-10:]
@@ -403,7 +383,6 @@ if w not in stop]
 
 # Strip HTML and punctuation to speed up the GridSearch later:
 
-# In[24]:
 
 
 X_train = df.loc[:25000, 'review'].values
@@ -412,13 +391,8 @@ X_test = df.loc[25000:, 'review'].values
 y_test = df.loc[25000:, 'sentiment'].values
 
 
-# In[25]:
 
 
-from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LogisticRegression
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import GridSearchCV
 
 tfidf = TfidfVectorizer(strip_accents=None,
                         lowercase=False,
@@ -470,7 +444,6 @@ gs_lr_tfidf = GridSearchCV(lr_tfidf, param_grid,
 #                    'clf__C': [1.0, 10.0]},
 #                   ]
 
-# In[ ]:
 
 
 ## @Readers: PLEASE IGNORE THIS CELL
@@ -490,41 +463,31 @@ if 'TRAVIS' in os.environ:
     y_test = df.loc[25000:25250, 'sentiment'].values
 
 
-# In[26]:
 
 
 gs_lr_tfidf.fit(X_train, y_train)
 
 
-# In[27]:
 
 
 print('Best parameter set: %s ' % gs_lr_tfidf.best_params_)
 print('CV Accuracy: %.3f' % gs_lr_tfidf.best_score_)
 
 
-# In[28]:
 
 
 clf = gs_lr_tfidf.best_estimator_
 print('Test Accuracy: %.3f' % clf.score(X_test, y_test))
 
 
-# <hr>
-# <hr>
 
 # ####  Start comment:
 #     
 # Please note that `gs_lr_tfidf.best_score_` is the average k-fold cross-validation score. I.e., if we have a `GridSearchCV` object with 5-fold cross-validation (like the one above), the `best_score_` attribute returns the average score over the 5-folds of the best model. To illustrate this with an example:
 
-# In[29]:
 
 
-from sklearn.linear_model import LogisticRegression
-import numpy as np
 
-from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection import cross_val_score
 
 np.random.seed(0)
 np.set_printoptions(precision=6)
@@ -540,10 +503,8 @@ cross_val_score(LogisticRegression(random_state=123), X, y, cv=cv5_idx)
 # 
 # Next, let us use the `GridSearchCV` object and feed it the same 5 cross-validation sets (via the pre-generated `cv3_idx` indices):
 
-# In[30]:
 
 
-from sklearn.model_selection import GridSearchCV
 
 gs = GridSearchCV(LogisticRegression(), {}, cv=cv5_idx, verbose=3).fit(X, y) 
 
@@ -552,7 +513,6 @@ gs = GridSearchCV(LogisticRegression(), {}, cv=cv5_idx, verbose=3).fit(X, y)
 
 # Now, the best_score_ attribute of the `GridSearchCV` object, which becomes available after `fit`ting, returns the average accuracy score of the best model:
 
-# In[31]:
 
 
 gs.best_score_
@@ -560,7 +520,6 @@ gs.best_score_
 
 # As we can see, the result above is consistent with the average score computed the `cross_val_score`.
 
-# In[32]:
 
 
 cross_val_score(LogisticRegression(), X, y, cv=cv5_idx).mean()
@@ -568,18 +527,12 @@ cross_val_score(LogisticRegression(), X, y, cv=cv5_idx).mean()
 
 # #### End comment.
 # 
-# <hr>
-# <hr>
 
 
 # # Working with bigger data - online algorithms and out-of-core learning
 
-# In[27]:
 
 
-import numpy as np
-import re
-from nltk.corpus import stopwords
 
 def tokenizer(text):
     text = re.sub('<[^>]*>', '', text)
@@ -597,13 +550,11 @@ def stream_docs(path):
             yield text, label
 
 
-# In[28]:
 
 
 next(stream_docs(path='movie_data.csv'))
 
 
-# In[29]:
 
 
 def get_minibatch(doc_stream, size):
@@ -618,11 +569,8 @@ def get_minibatch(doc_stream, size):
     return docs, y
 
 
-# In[30]:
 
 
-from sklearn.feature_extraction.text import HashingVectorizer
-from sklearn.linear_model import SGDClassifier
 
 vect = HashingVectorizer(decode_error='ignore', 
                          n_features=2**21,
@@ -638,10 +586,8 @@ doc_stream = stream_docs(path='movie_data.csv')
 # - You can replace `Perceptron(n_iter, ...)` by `Perceptron(max_iter, ...)` in scikit-learn >= 0.19. The `n_iter` parameter is used here deriberately, because some people still use scikit-learn 0.18.
 # 
 
-# In[31]:
 
 
-import pyprind
 pbar = pyprind.ProgBar(45)
 
 classes = np.array([0, 1])
@@ -654,7 +600,6 @@ for _ in range(45):
     pbar.update()
 
 
-# In[32]:
 
 
 X_test, y_test = get_minibatch(doc_stream, size=5000)
@@ -662,7 +607,6 @@ X_test = vect.transform(X_test)
 print('Accuracy: %.3f' % clf.score(X_test, y_test))
 
 
-# In[33]:
 
 
 clf = clf.partial_fit(X_test, y_test)
@@ -674,16 +618,13 @@ clf = clf.partial_fit(X_test, y_test)
 
 # ### Latent Dirichlet Allocation with scikit-learn
 
-# In[1]:
 
 
-import pandas as pd
 
 df = pd.read_csv('movie_data.csv', encoding='utf-8')
 df.head(3)
 
 
-# In[ ]:
 
 
 ## @Readers: PLEASE IGNORE THIS CELL
@@ -700,10 +641,8 @@ if 'TRAVIS' in os.environ:
     print('SMALL DATA SUBSET CREATED FOR TESTING')
 
 
-# In[2]:
 
 
-from sklearn.feature_extraction.text import CountVectorizer
 
 count = CountVectorizer(stop_words='english',
                         max_df=.1,
@@ -711,10 +650,8 @@ count = CountVectorizer(stop_words='english',
 X = count.fit_transform(df['review'].values)
 
 
-# In[3]:
 
 
-from sklearn.decomposition import LatentDirichletAllocation
 
 lda = LatentDirichletAllocation(n_topics=10,
                                 random_state=123,
@@ -722,13 +659,11 @@ lda = LatentDirichletAllocation(n_topics=10,
 X_topics = lda.fit_transform(X)
 
 
-# In[4]:
 
 
 lda.components_.shape
 
 
-# In[5]:
 
 
 n_top_words = 5
@@ -756,7 +691,6 @@ for topic_idx, topic in enumerate(lda.components_):
 
 # To confirm that the categories make sense based on the reviews, let's plot 5 movies from the horror movie category (category 6 at index position 5):
 
-# In[6]:
 
 
 horror = X_topics[:, 5].argsort()[::-1]
@@ -770,3 +704,13 @@ for iter_idx, movie_idx in enumerate(horror[:3]):
 
 
 # # Summary
+
+# ...
+
+# ---
+# 
+# Readers may ignore the next cell.
+
+
+
+

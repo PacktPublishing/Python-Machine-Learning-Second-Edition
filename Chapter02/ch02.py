@@ -1,5 +1,10 @@
-
 # coding: utf-8
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 # *Python Machine Learning 2nd Edition* by [Sebastian Raschka](https://sebastianraschka.com), Packt Publishing Ltd. 2017
 # 
@@ -13,7 +18,6 @@
 
 # Note that the optional watermark extension is a small IPython notebook plugin that I developed to make the code reproducible. You can just skip the following line(s).
 
-# In[1]:
 
 
 
@@ -37,34 +41,28 @@
 # - [Summary](#Summary)
 
 
-# In[2]:
 
 
-from IPython.display import Image
 
 
 # # Artificial neurons - a brief glimpse into the early history of machine learning
 
-# In[3]:
 
 
 
 
 # ## The formal definition of an artificial neuron
 
-# In[4]:
 
 
 
 
 # ## The perceptron learning rule
 
-# In[5]:
 
 
 
 
-# In[6]:
 
 
 
@@ -74,10 +72,8 @@ from IPython.display import Image
 
 # ## An object-oriented perceptron API
 
-# In[7]:
 
 
-import numpy as np
 
 
 class Perceptron(object):
@@ -145,7 +141,6 @@ class Perceptron(object):
         return np.where(self.net_input(X) >= 0.0, 1, -1)
 
 
-# In[8]:
 
 
 v1 = np.array([1, 2, 3])
@@ -160,17 +155,14 @@ np.arccos(v1.dot(v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))
 
 # ### Reading-in the Iris data
 
-# In[9]:
 
 
-import pandas as pd
 
 df = pd.read_csv('https://archive.ics.uci.edu/ml/'
         'machine-learning-databases/iris/iris.data', header=None)
 df.tail()
 
 
-# <hr>
 # 
 # ### Note:
 # 
@@ -185,23 +177,18 @@ df.tail()
 #     df = pd.read_csv('your/local/path/to/iris.data', header=None)
 # 
 
-# In[10]:
 
 
 df = pd.read_csv('iris.data', header=None)
 df.tail()
 
 
-# <hr>
 
 
 # ### Plotting the Iris data
 
-# In[11]:
 
 
-import matplotlib.pyplot as plt
-import numpy as np
 
 # select setosa and versicolor
 y = df.iloc[0:100, 4].values
@@ -227,7 +214,6 @@ plt.show()
 
 # ### Training the perceptron model
 
-# In[12]:
 
 
 ppn = Perceptron(eta=0.1, n_iter=10)
@@ -245,10 +231,8 @@ plt.show()
 
 # ### A function for plotting decision regions
 
-# In[13]:
 
 
-from matplotlib.colors import ListedColormap
 
 
 def plot_decision_regions(X, y, classifier, resolution=0.02):
@@ -280,7 +264,6 @@ def plot_decision_regions(X, y, classifier, resolution=0.02):
                     edgecolor='black')
 
 
-# In[14]:
 
 
 plot_decision_regions(X, y, classifier=ppn)
@@ -300,12 +283,10 @@ plt.show()
 
 # ## Minimizing cost functions with gradient descent
 
-# In[15]:
 
 
 
 
-# In[16]:
 
 
 
@@ -313,7 +294,6 @@ plt.show()
 
 # ## Implementing an adaptive linear neuron in Python
 
-# In[17]:
 
 
 class AdalineGD(object):
@@ -393,7 +373,6 @@ class AdalineGD(object):
         return np.where(self.activation(self.net_input(X)) >= 0.0, 1, -1)
 
 
-# In[18]:
 
 
 fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 4))
@@ -415,7 +394,6 @@ plt.show()
 
 
 
-# In[19]:
 
 
 
@@ -423,12 +401,10 @@ plt.show()
 
 # ## Improving gradient descent through feature scaling
 
-# In[20]:
 
 
 
 
-# In[21]:
 
 
 # standardize features
@@ -437,7 +413,6 @@ X_std[:, 0] = (X[:, 0] - X[:, 0].mean()) / X[:, 0].std()
 X_std[:, 1] = (X[:, 1] - X[:, 1].mean()) / X[:, 1].std()
 
 
-# In[22]:
 
 
 ada = AdalineGD(n_iter=15, eta=0.01)
@@ -464,7 +439,6 @@ plt.show()
 
 # ## Large scale machine learning and stochastic gradient descent
 
-# In[23]:
 
 
 class AdalineSGD(object):
@@ -572,7 +546,6 @@ class AdalineSGD(object):
         return np.where(self.activation(self.net_input(X)) >= 0.0, 1, -1)
 
 
-# In[24]:
 
 
 ada = AdalineSGD(n_iter=15, eta=0.01, random_state=1)
@@ -597,7 +570,6 @@ plt.tight_layout()
 plt.show()
 
 
-# In[25]:
 
 
 ada.partial_fit(X_std[0, :], y[0])
@@ -612,12 +584,10 @@ ada.partial_fit(X_std[0, :], y[0])
 # 
 # Readers may ignore the following cell
 
-# In[9]:
 
 
 
 
-# In[ ]:
 
 
 

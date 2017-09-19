@@ -1,5 +1,24 @@
-
 # coding: utf-8
+
+
+import pandas as pd
+from io import StringIO
+import sys
+from sklearn.preprocessing import Imputer
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+import matplotlib.pyplot as plt
+from sklearn.base import clone
+from itertools import combinations
+from sklearn.metrics import accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
 
 # *Python Machine Learning 2nd Edition* by [Sebastian Raschka](https://sebastianraschka.com), Packt Publishing Ltd. 2017
 # 
@@ -13,7 +32,6 @@
 
 # Note that the optional watermark extension is a small IPython notebook plugin that I developed to make the code reproducible. You can just skip the following line(s).
 
-# In[1]:
 
 
 
@@ -44,22 +62,16 @@
 # - [Summary](#Summary)
 
 
-# In[2]:
 
 
-from IPython.display import Image
 
 
 # # Dealing with missing data
 
 # ## Identifying missing values in tabular data
 
-# In[3]:
 
 
-import pandas as pd
-from io import StringIO
-import sys
 
 csv_data = '''A,B,C,D
 1.0,2.0,3.0,4.0
@@ -76,13 +88,11 @@ df = pd.read_csv(StringIO(csv_data))
 df
 
 
-# In[4]:
 
 
 df.isnull().sum()
 
 
-# In[5]:
 
 
 # access the underlying NumPy array
@@ -93,7 +103,6 @@ df.values
 
 # ## Eliminating samples or features with missing values
 
-# In[6]:
 
 
 # remove rows that contain missing values
@@ -101,7 +110,6 @@ df.values
 df.dropna(axis=0)
 
 
-# In[7]:
 
 
 # remove columns that contain missing values
@@ -109,7 +117,6 @@ df.dropna(axis=0)
 df.dropna(axis=1)
 
 
-# In[8]:
 
 
 # remove columns that contain missing values
@@ -117,7 +124,6 @@ df.dropna(axis=1)
 df.dropna(axis=1)
 
 
-# In[9]:
 
 
 # only drop rows where all columns are NaN
@@ -125,7 +131,6 @@ df.dropna(axis=1)
 df.dropna(how='all')  
 
 
-# In[10]:
 
 
 # drop rows that have less than 3 real values 
@@ -133,7 +138,6 @@ df.dropna(how='all')
 df.dropna(thresh=4)
 
 
-# In[11]:
 
 
 # only drop rows where NaN appear in specific columns (here: 'C')
@@ -144,19 +148,16 @@ df.dropna(subset=['C'])
 
 # ## Imputing missing values
 
-# In[12]:
 
 
 # again: our original array
 df.values
 
 
-# In[13]:
 
 
 # impute missing values via the column mean
 
-from sklearn.preprocessing import Imputer
 
 imr = Imputer(missing_values='NaN', strategy='mean', axis=0)
 imr = imr.fit(df.values)
@@ -167,12 +168,10 @@ imputed_data
 
 # ## Understanding the scikit-learn estimator API
 
-# In[14]:
 
 
 
 
-# In[15]:
 
 
 
@@ -182,10 +181,8 @@ imputed_data
 
 # ## Nominal and ordinal features
 
-# In[16]:
 
 
-import pandas as pd
 
 df = pd.DataFrame([['green', 'M', 10.1, 'class1'],
                    ['red', 'L', 13.5, 'class2'],
@@ -198,7 +195,6 @@ df
 
 # ## Mapping ordinal features
 
-# In[17]:
 
 
 size_mapping = {'XL': 3,
@@ -209,7 +205,6 @@ df['size'] = df['size'].map(size_mapping)
 df
 
 
-# In[18]:
 
 
 inv_size_mapping = {v: k for k, v in size_mapping.items()}
@@ -219,10 +214,8 @@ df['size'].map(inv_size_mapping)
 
 # ## Encoding class labels
 
-# In[19]:
 
 
-import numpy as np
 
 # create a mapping dict
 # to convert class labels from strings to integers
@@ -230,7 +223,6 @@ class_mapping = {label: idx for idx, label in enumerate(np.unique(df['classlabel
 class_mapping
 
 
-# In[20]:
 
 
 # to convert class labels from strings to integers
@@ -238,7 +230,6 @@ df['classlabel'] = df['classlabel'].map(class_mapping)
 df
 
 
-# In[21]:
 
 
 # reverse the class label mapping
@@ -247,10 +238,8 @@ df['classlabel'] = df['classlabel'].map(inv_class_mapping)
 df
 
 
-# In[22]:
 
 
-from sklearn.preprocessing import LabelEncoder
 
 # Label encoding with sklearn's LabelEncoder
 class_le = LabelEncoder()
@@ -258,7 +247,6 @@ y = class_le.fit_transform(df['classlabel'].values)
 y
 
 
-# In[23]:
 
 
 # reverse mapping
@@ -268,7 +256,6 @@ class_le.inverse_transform(y)
 
 # ## Performing one-hot encoding on nominal features
 
-# In[24]:
 
 
 X = df[['color', 'size', 'price']].values
@@ -278,16 +265,13 @@ X[:, 0] = color_le.fit_transform(X[:, 0])
 X
 
 
-# In[25]:
 
 
-from sklearn.preprocessing import OneHotEncoder
 
 ohe = OneHotEncoder(categorical_features=[0])
 ohe.fit_transform(X).toarray()
 
 
-# In[26]:
 
 
 # return dense array so that we can skip
@@ -297,7 +281,6 @@ ohe = OneHotEncoder(categorical_features=[0], sparse=False)
 ohe.fit_transform(X)
 
 
-# In[27]:
 
 
 # one-hot encoding via pandas
@@ -305,7 +288,6 @@ ohe.fit_transform(X)
 pd.get_dummies(df[['price', 'color', 'size']])
 
 
-# In[28]:
 
 
 # multicollinearity guard in get_dummies
@@ -313,7 +295,6 @@ pd.get_dummies(df[['price', 'color', 'size']])
 pd.get_dummies(df[['price', 'color', 'size']], drop_first=True)
 
 
-# In[29]:
 
 
 # multicollinearity guard for the OneHotEncoder
@@ -325,7 +306,6 @@ ohe.fit_transform(X).toarray()[:, 1:]
 
 # # Partitioning a dataset into a seperate training and test set
 
-# In[30]:
 
 
 df_wine = pd.read_csv('https://archive.ics.uci.edu/'
@@ -349,10 +329,8 @@ print('Class labels', np.unique(df_wine['Class label']))
 df_wine.head()
 
 
-# In[31]:
 
 
-from sklearn.model_selection import train_test_split
 
 X, y = df_wine.iloc[:, 1:].values, df_wine.iloc[:, 0].values
 
@@ -365,20 +343,16 @@ X_train, X_test, y_train, y_test =    train_test_split(X, y,
 
 # # Bringing features onto the same scale
 
-# In[32]:
 
 
-from sklearn.preprocessing import MinMaxScaler
 
 mms = MinMaxScaler()
 X_train_norm = mms.fit_transform(X_train)
 X_test_norm = mms.transform(X_test)
 
 
-# In[33]:
 
 
-from sklearn.preprocessing import StandardScaler
 
 stdsc = StandardScaler()
 X_train_std = stdsc.fit_transform(X_train)
@@ -387,7 +361,6 @@ X_test_std = stdsc.transform(X_test)
 
 # A visual example:
 
-# In[34]:
 
 
 ex = np.array([0, 1, 2, 3, 4, 5])
@@ -411,38 +384,31 @@ print('normalized:', (ex - ex.min()) / (ex.max() - ex.min()))
 
 # ## A geometric interpretation of L2 regularization
 
-# In[35]:
 
 
 
 
-# In[36]:
 
 
 
 
 # ## Sparse solutions with L1-regularization
 
-# In[37]:
 
 
 
 
 # For regularized models in scikit-learn that support L1 regularization, we can simply set the `penalty` parameter to `'l1'` to obtain a sparse solution:
 
-# In[38]:
 
 
-from sklearn.linear_model import LogisticRegression
 LogisticRegression(penalty='l1')
 
 
 # Applied to the standardized Wine data ...
 
-# In[39]:
 
 
-from sklearn.linear_model import LogisticRegression
 
 lr = LogisticRegression(penalty='l1', C=1.0)
 lr.fit(X_train_std, y_train)
@@ -450,34 +416,28 @@ print('Training accuracy:', lr.score(X_train_std, y_train))
 print('Test accuracy:', lr.score(X_test_std, y_test))
 
 
-# In[40]:
 
 
 lr.intercept_
 
 
-# In[41]:
 
 
 np.set_printoptions(8)
 
 
-# In[42]:
 
 
 lr.coef_[lr.coef_!=0].shape
 
 
-# In[43]:
 
 
 lr.coef_
 
 
-# In[44]:
 
 
-import matplotlib.pyplot as plt
 
 fig = plt.figure()
 ax = plt.subplot(111)
@@ -517,14 +477,8 @@ plt.show()
 
 # ## Sequential feature selection algorithms
 
-# In[45]:
 
 
-from sklearn.base import clone
-from itertools import combinations
-import numpy as np
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
 
 
 class SBS():
@@ -578,11 +532,8 @@ class SBS():
         return score
 
 
-# In[46]:
 
 
-import matplotlib.pyplot as plt
-from sklearn.neighbors import KNeighborsClassifier
 
 knn = KNeighborsClassifier(n_neighbors=5)
 
@@ -603,14 +554,12 @@ plt.tight_layout()
 plt.show()
 
 
-# In[47]:
 
 
 k3 = list(sbs.subsets_[10])
 print(df_wine.columns[1:][k3])
 
 
-# In[48]:
 
 
 knn.fit(X_train_std, y_train)
@@ -618,7 +567,6 @@ print('Training accuracy:', knn.score(X_train_std, y_train))
 print('Test accuracy:', knn.score(X_test_std, y_test))
 
 
-# In[49]:
 
 
 knn.fit(X_train_std[:, k3], y_train)
@@ -629,10 +577,8 @@ print('Test accuracy:', knn.score(X_test_std[:, k3], y_test))
 
 # # Assessing feature importance with Random Forests
 
-# In[50]:
 
 
-from sklearn.ensemble import RandomForestClassifier
 
 feat_labels = df_wine.columns[1:]
 
@@ -662,10 +608,8 @@ plt.tight_layout()
 plt.show()
 
 
-# In[51]:
 
 
-from sklearn.feature_selection import SelectFromModel
 
 sfm = SelectFromModel(forest, threshold=0.1, prefit=True)
 X_selected = sfm.transform(X_train)
@@ -675,7 +619,6 @@ print('Number of samples that meet this criterion:',
 
 # Now, let's print the 3 features that met the threshold criterion for feature selection that we set earlier (note that this code snippet does not appear in the actual book but was added to this notebook later for illustrative purposes):
 
-# In[52]:
 
 
 for f in range(X_selected.shape[1]):
@@ -688,3 +631,11 @@ for f in range(X_selected.shape[1]):
 # # Summary
 
 # ...
+
+# ---
+# 
+# Readers may ignore the next cell.
+
+
+
+

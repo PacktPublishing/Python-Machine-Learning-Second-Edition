@@ -1,6 +1,3 @@
-from __future__ import print_function
-
-
 
 # coding: utf-8
 
@@ -19,6 +16,8 @@ from __future__ import print_function
 # In[1]:
 
 
+get_ipython().magic('load_ext watermark')
+get_ipython().magic("watermark -a 'Sebastian Raschka & Vahid Mirjalili' -d -p numpy,scipy,tensorflow")
 
 
 # *The use of `watermark` is optional. You can install this IPython extension via "`pip install watermark`". For more information, please see*: https://github.com/rasbt/watermark.
@@ -43,12 +42,14 @@ from __future__ import print_function
 
 
 from IPython.display import Image
+get_ipython().magic('matplotlib inline')
 
 
 # In[3]:
 
 
 # This is for Python 2.7 compatibility
+from __future__ import print_function
 
 
 # # Building blocks of convolutional neural networks 
@@ -58,6 +59,7 @@ from IPython.display import Image
 # In[4]:
 
 
+Image(filename='images/15_01.png', width=700) 
 
 
 # ## Performing discrete convolutions  
@@ -67,11 +69,13 @@ from IPython.display import Image
 # In[5]:
 
 
+Image(filename='images/15_02.png', width=700) 
 
 
 # In[6]:
 
 
+Image(filename='images/15_03.png', width=700) 
 
 
 # ### The effect of zero-padding in convolution
@@ -79,6 +83,7 @@ from IPython.display import Image
 # In[7]:
 
 
+Image(filename='images/15_11.png', width=700) 
 
 
 # ### Determining the size of the convolution output
@@ -115,11 +120,13 @@ print('Numpy Results:         ',
 # In[9]:
 
 
+Image(filename='images/15_04.png', width=700) 
 
 
 # In[10]:
 
 
+Image(filename='images/15_05.png', width=900) 
 
 
 # In[11]:
@@ -163,6 +170,7 @@ print('Scipy Results:         \n',
 # In[12]:
 
 
+Image(filename='images/15_06.png', width=700) 
 
 
 # # Putting everything together to build a CNN 
@@ -194,6 +202,7 @@ print(img[100:102, 100:102, :])
 # In[14]:
 
 
+Image(filename='images/15_07.png', width=800) 
 
 
 # ## Regularizing a neural network with dropout
@@ -201,6 +210,7 @@ print(img[100:102, 100:102, :])
 # In[15]:
 
 
+Image(filename='images/15_08.png', width=800) 
 
 
 # # Implementing a deep convolutional neural network using TensorFlow
@@ -210,6 +220,7 @@ print(img[100:102, 100:102, :])
 # In[16]:
 
 
+Image(filename='images/15_09.png', width=800) 
 
 
 # ## Loading and preprocessing the data
@@ -349,7 +360,7 @@ def conv_layer(input_tensor, name,
                             padding=padding_mode)
         print(conv)
         conv = tf.nn.bias_add(conv, biases, 
-                              name='net_pre-activaiton')
+                              name='net_pre-activation')
         print(conv)
         conv = tf.nn.relu(conv, name='activation')
         print(conv)
@@ -390,7 +401,7 @@ def fc_layer(input_tensor, name,
         layer = tf.matmul(input_tensor, weights)
         print(layer)
         layer = tf.nn.bias_add(layer, biases,
-                              name='net_pre-activaiton')
+                              name='net_pre-activation')
         print(layer)
         if activation_fn is None:
             return layer
@@ -785,6 +796,7 @@ with tf.Session(graph=g) as sess:
 # In[4]:
 
 
+Image(filename='images/15_10.png', width=800) 
 
 
 # ## Implementing a CNN in the TensorFlow layers API
@@ -1015,13 +1027,8 @@ print('Test Accuracy: %.2f%%' % (100*
 # 
 # Readers may ignore the next cell.
 
-# In[ ]:
+# In[1]:
 
 
-
-
-# In[ ]:
-
-
-
+get_ipython().system(' python ../.convert_notebook_to_script.py --input ch15.ipynb --output ch15.py')
 

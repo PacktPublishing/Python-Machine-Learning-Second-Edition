@@ -1,5 +1,15 @@
-
 # coding: utf-8
+
+
+import gzip
+import pyprind
+import pandas as pd
+from string import punctuation
+import re
+import numpy as np
+import os
+from collections import Counter
+import tensorflow as tf
 
 # *Python Machine Learning 2nd Edition* by [Sebastian Raschka](https://sebastianraschka.com) and Vahid Mirjalili, Packt Publishing Ltd. 2017
 # 
@@ -15,7 +25,6 @@
 
 # Note that the optional watermark extension is a small IPython notebook plugin that is being used to make the code reproducible. You can just skip the following line(s).
 
-# In[1]:
 
 
 
@@ -44,16 +53,12 @@
 #     - [Building the character-level RNN model](#Building-the-character-level-RNN-model)
 # - [Summary](#Summary)
 
-# In[2]:
 
 
-from IPython.display import Image
 
 
-# In[ ]:
 
 
-import gzip
 
 
 with gzip.open('movie_data.csv.gz') as f_in, open('movie_data.csv', 'wb') as f_out:
@@ -66,14 +71,12 @@ with gzip.open('movie_data.csv.gz') as f_in, open('movie_data.csv', 'wb') as f_o
 
 # ## Representing sequences
 
-# In[3]:
 
 
 
 
 # ## Understanding the different categories of sequence modeling
 
-# In[4]:
 
 
 
@@ -82,38 +85,32 @@ with gzip.open('movie_data.csv.gz') as f_in, open('movie_data.csv', 'wb') as f_o
 
 # ## Understanding the structure and flow of a recurrent neural network 
 
-# In[5]:
 
 
 
 
-# In[6]:
 
 
 
 
 # ## Computing activations in an RNN
 
-# In[7]:
 
 
 
 
-# In[8]:
 
 
 
 
 # ## The challenges of learning long-range interactions
 
-# In[9]:
 
 
 
 
 # ## Long short-term memory units
 
-# In[10]:
 
 
 
@@ -124,26 +121,18 @@ with gzip.open('movie_data.csv.gz') as f_in, open('movie_data.csv', 'wb') as f_o
 
 # ### Preparing the data
 
-# In[11]:
 
 
 
 
-# In[1]:
 
 
-import pyprind
-import pandas as pd
-from string import punctuation
-import re
-import numpy as np
 
 
 df = pd.read_csv('movie_data.csv', encoding='utf-8')
 print(df.head(3))
 
 
-# In[ ]:
 
 
 ## @Readers: PLEASE IGNORE THIS CELL
@@ -155,14 +144,12 @@ print(df.head(3))
 ## speeding up the run using a smaller
 ## dataset for debugging
 
-import os
 
 
 if 'TRAVIS' in os.environ:
     df = pd.read_csv('movie_data.csv', encoding='utf-8', nrows=500)
 
 
-# In[2]:
 
 
 ## Preprocessing the data:
@@ -170,7 +157,6 @@ if 'TRAVIS' in os.environ:
 ## count each word's occurrence
 
 
-from collections import Counter
 
 
 counts = Counter()
@@ -183,7 +169,6 @@ for i,review in enumerate(df['review']):
     counts.update(text.split())
 
 
-# In[3]:
 
 
 ## Create a mapping:
@@ -202,7 +187,6 @@ for review in df['review']:
     pbar.update()
 
 
-# In[4]:
 
 
 ## Define fixed-length sequences:
@@ -236,7 +220,6 @@ def create_batch_generator(x, y=None, batch_size=64):
             yield x[ii:ii+batch_size]
 
 
-# In[ ]:
 
 
 ## @Readers: PLEASE IGNORE THIS CELL
@@ -257,17 +240,14 @@ if 'TRAVIS' in os.environ:
 
 # ### Embedding
 
-# In[12]:
 
 
 
 
 # ### Building the RNN model
 
-# In[5]:
 
 
-import tensorflow as tf
 
 
 class SentimentRNN(object):
@@ -420,7 +400,6 @@ class SentimentRNN(object):
 # 
 # 
 
-# In[6]:
 
 
 ## Train:
@@ -436,13 +415,11 @@ rnn = SentimentRNN(n_words=n_words,
                    learning_rate=0.001)
 
 
-# In[7]:
 
 
 rnn.train(X_train, y_train, num_epochs=40)
 
 
-# In[ ]:
 
 
 ## Test: 
@@ -452,7 +429,6 @@ print('Test Acc.: %.3f' % (
       np.sum(preds == y_true) / len(y_true)))
 
 
-# In[ ]:
 
 
 ## Get probabilities:
@@ -461,7 +437,6 @@ proba = rnn.predict(X_test, return_proba=True)
 
 # ## Example application: character-level language modeling
 
-# In[13]:
 
 
 
@@ -469,25 +444,20 @@ proba = rnn.predict(X_test, return_proba=True)
 # ### Preparing the data
 # 
 
-# In[14]:
 
 
 
 
-# In[15]:
 
 
 
 
-# In[16]:
 
 
 
 
-# In[1]:
 
 
-import numpy as np
 
 
 ## Reading and processing text
@@ -502,7 +472,6 @@ text_ints = np.array([char2int[ch] for ch in text],
                      dtype=np.int32)
 
 
-# In[ ]:
 
 
 ## @Readers: PLEASE IGNORE THIS CELL
@@ -523,7 +492,6 @@ if 'TRAVIS' in os.environ:
                          dtype=np.int32)
 
 
-# In[2]:
 
 
 def reshape_data(sequence, batch_size, num_steps):
@@ -553,7 +521,6 @@ print(train_y[0, :10])
 print(''.join(int2char[i] for i in train_x[0, :50]))
 
 
-# In[3]:
 
 
 np.random.seed(123)
@@ -574,11 +541,8 @@ for b in bgen:
 
 # ### Building the character-level RNN model
 
-# In[4]:
 
 
-import tensorflow as tf
-import os
 
 class CharRNN(object):
     def __init__(self, num_classes, batch_size=64, 
@@ -759,7 +723,6 @@ class CharRNN(object):
         return ''.join(observed_seq)
 
 
-# In[5]:
 
 
 def get_top_char(probas, char_size, top_n=5):
@@ -770,7 +733,6 @@ def get_top_char(probas, char_size, top_n=5):
     return ch_id
 
 
-# In[6]:
 
 
 batch_size = 64
@@ -785,7 +747,6 @@ rnn.train(train_x, train_y,
           ckpt_dir='./model-100/')
 
 
-# In[7]:
 
 
 np.random.seed(123)
@@ -795,7 +756,6 @@ print(rnn.sample(ckpt_dir='./model-100/',
                  output_length=500))
 
 
-# In[8]:
 
 
 ## run for 200 epochs
@@ -808,7 +768,6 @@ rnn.train(train_x, train_y,
           ckpt_dir='./model-200/')
 
 
-# In[9]:
 
 
 del rnn
@@ -827,7 +786,11 @@ print(rnn.sample(ckpt_dir='./model-200/',
 # 
 # Readers may ignore the next cell.
 
-# In[ ]:
+
+
+
+
+
 
 
 
