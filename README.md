@@ -21,7 +21,8 @@ The code will look like the following:
 ```
 
 The execution of the code examples provided in this book requires an installation of Python 3.6.0 or newer on macOS, Linux, or Microsoft Windows. We will make frequent use of Python's essential libraries for scientifi computing throughout this book, including SciPy, NumPy, scikit-learn, Matplotlib, and pandas.The fist chapter will provide you with instructions and useful tips to set up your Python environment and these core libraries. We will add additional libraries to our repertoire; moreover, installation instructions are provided in the respective chapters: the NLTK library for natural language processing (Chapter 8, Applying Machine Learning to Sentiment Analysis), the Flask web framework (Chapter 9, Embedding a Machine Learning Algorithm into a Web Application), the Seaborn library for statistical data visualization (Chapter 10, Predicting Continuous Target Variables with Regression Analysis), and TensorFlow for effiient neural network training on graphical processing units (Chapters 13 to 16).
-
+You can also find the code files at the following link:
+https://github.com/rasbt/python-machine-learning-book-2nd-edition
 ## Related Products
 * [Python Machine Learning](https://www.packtpub.com/big-data-and-business-intelligence/python-machine-learning?utm_source=github&utm_medium=repository&utm_campaign=9781783555130)
 
